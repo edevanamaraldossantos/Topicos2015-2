@@ -21,7 +21,7 @@ public class Explosao {
         this.ator = ator;
         this.texturas = texturas;
     }
-    //Calcula o tempo acumulado e realiza a troca de estagio das Explos„o
+    //Calcula o tempo acumulado e realiza a troca de estagio das Explos√£o
     //exemplo: cada quadro demora 0,016 segundo
     //cada Imagem  deve permanecer 0,05 segundos
 

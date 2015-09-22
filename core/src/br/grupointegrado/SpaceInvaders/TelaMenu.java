@@ -2,15 +2,19 @@ package br.grupointegrado.SpaceInvaders;
 
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 
 /**
@@ -39,10 +43,32 @@ public class TelaMenu extends TelaBase {
     public void show() {
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         palco= new Stage(new FillViewport(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),camera));
-        Gdx.input.setInputProcessor(palco);
+        Gdx.input.setInputProcessor(palco);//define o palco com processo
 
         initiFontes();
         initiLabels();
+        initiBotoes();
+    }
+
+    private void initiBotoes() {
+        textureBotao = new Texture("buttons/button.png");
+        textureBotaoPressionar = new Texture("buttons/button-down.png");
+        ImageTextButton.ImageTextButtonStyle estilo =
+                new ImageTextButton.ImageTextButtonStyle();
+        estilo.font=fonteBotoes;
+        estilo.up = new SpriteDrawable(new Sprite(textureBotao));
+        estilo.down = new SpriteDrawable(new Sprite(textureBotaoPressionar));
+
+        btnIniciar = new ImageTextButton(" Iniciar jogo ",estilo);
+        palco.addActor(btnIniciar);
+
+        btnIniciar.addListener(new ClickListener() {
+
+            @Override
+            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
+                game.setScreen(new TelaJogo(game));
+            }
+        });
     }
 
 
@@ -50,14 +76,23 @@ public class TelaMenu extends TelaBase {
         Label.LabelStyle estilo = new Label.LabelStyle();
         estilo.font = fonteTitutlo;
 
-        lbTitulo = new Label("Space Invader",estilo);
+        lbTitulo = new Label("Space Invaders",estilo);
         palco.addActor(lbTitulo);
+
+        Preferences preferences = Gdx.app.getPreferences("SpaceInvaders");
+        int pontuacaoMaxima = preferences.getInteger("pontuacaoMaxima");
+
+        estilo = new Label.LabelStyle();
+        estilo.font = fonteBotoes;
+
+        lbPontuacao = new Label("PontuacaoMaxima:" + pontuacaoMaxima + "pontos",estilo);
+        palco.addActor(lbPontuacao);
     }
 
 
     private void initiFontes() {
         FreeTypeFontGenerator gerador = new FreeTypeFontGenerator(Gdx.files.internal("fonts/roboto.ttf"));
-
+         //instancia a fonte utilizada no titulo
         FreeTypeFontGenerator.FreeTypeFontParameter params =
                 new FreeTypeFontGenerator.FreeTypeFontParameter();
         params.size=48;
@@ -65,7 +100,11 @@ public class TelaMenu extends TelaBase {
         params.shadowOffsetX=2;
         params.shadowOffsetY=2;
         params.shadowColor = Color.BLACK;
-
+        //instacia a fonte utilizada nos botões
+        params = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        params.size=32;
+        params.color=Color.BLACK;
+        fonteBotoes=gerador.generateFont(params);
         fonteTitutlo = gerador.generateFont(params);
         gerador.dispose();
     }
@@ -75,19 +114,32 @@ public class TelaMenu extends TelaBase {
         Gdx.gl.glClearColor(1f,1f,1f,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-     atualizarLabel();
+        atualizarLabel();
+        atualizarBotoes();
 
         palco.act(delta);
         palco.draw();
 
     }
 
+    private void atualizarBotoes() {
+
+        float x = camera.viewportHeight /2 - btnIniciar.getPrefWidth() /2;
+        float y = camera.viewportHeight /2 - btnIniciar.getHeight() /2;;
+
+        btnIniciar.setPosition(x,y);
+    }
+
     private void  atualizarLabel(){
 
-        float x = camera.viewportWidth/2- lbTitulo.getPrefWidth()/2;
-        float y = camera.viewportHeight-100;
+        float x = camera.viewportWidth /2 - lbTitulo.getPrefWidth() /2;
+        float y = camera.viewportHeight -100;
 
         lbTitulo.setPosition(x, y);
+
+        x = camera.viewportHeight /2 - lbPontuacao.getPrefWidth()/2;
+        y = 100;
+        lbPontuacao.setPosition(x,y);
 
     }
 
@@ -113,6 +165,9 @@ public class TelaMenu extends TelaBase {
     public void dispose() {
         palco.dispose();
         fonteTitutlo.dispose();
+        fonteBotoes.dispose();
+        textureBotao.dispose();
+        textureBotaoPressionar.dispose();
     }
 
     public Texture getTextureBotao() {
